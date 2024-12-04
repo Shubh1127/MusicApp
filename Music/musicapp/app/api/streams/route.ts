@@ -23,18 +23,18 @@ export async function POST(req:NextResponse){
         }
         const extractedId=data.url.split("?v=")[1];
         const res=await youtubesearchapi.GetVideoDetails(extractedId);
-        console.log(res.title);
-        console.log(res.thumbnail.thumbnails);
+    
         const thumbnails=res.thumbnail.thumbnails;
-        thumbnails.sort((a:{width:number},b:{width:number})=>a.width < b.wdith ? -1:1)
+        thumbnails.sort((a:{width:number},b:{width:number})=>a.width < b.width ? -1:1)
        const stream=await  prismaClient.stream.create({
             data:{
                 userId:data.creatorId,
                 url:data.url,
                 extractedId,
                 type:"Youtube",
-                title:res.title,
-
+                title:res.title ?? "can't find Video", 
+                smallImg:(thumbnails.length > 1 ? thumbnails[thumbnails.length-2].url : thumbnails[thumbnails.length-1].url) ?? "https://img.freepik.com/free-vector/oops-404-error-with-broken-robot-concept-illustration_114360-5529.jpg",
+                bigImg:thumbnails[thumbnails.length-1].url ?? "https://img.freepik.com/free-vector/oops-404-error-with-broken-robot-concept-illustration_114360-5529.jpg"
             }
         });
         return NextResponse.json({
@@ -53,7 +53,7 @@ export async function GET(req:NextResponse){
     const creatorId=req.nextUrl.searchParams.get("creatorId");
     const streams=await prismaClient.stream.findMany({
         where:{
-                usrId:creatorId ?? ""
+                userId:creatorId ?? ""
         }
     })
     return NextResponse.json({
