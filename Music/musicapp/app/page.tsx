@@ -3,15 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Play, Users, Radio } from "lucide-react";
 import Link from "next/link";
 import { Appbar } from "./components/Appbar";
+import { Redirect } from "./components/Redirect";
 
 export default function LandingPage() {
   return (
     <>
-      <div className="flex flex-col min-h-screen bg-gray-900 text-gray-100">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to bg-gray-900 text-white">
       <Appbar />
-        <header className="px-4 lg:px-6 h-14 flex items-center bg-gray-800"></header>
+      <Redirect/>
+        <header className="px-4 lg:px-6 h-14 flex items-center "></header>
         <main className="flex-1">
-          <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-gray-800">
+          <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 ">
             <div className="container px-4 md:px-6">
               <div className="flex flex-col items-center space-y-4 text-center">
                 <div className="space-y-2">
@@ -60,7 +62,7 @@ export default function LandingPage() {
               </div>
             </div>
           </section>
-          <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-800">
+          <section className="w-full py-12 md:py-24 lg:py-32 ">
             <div className="container px-4 md:px-6 text-center">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl mb-4 text-purple-400">
                 Ready to Revolutionize Your Streams?
