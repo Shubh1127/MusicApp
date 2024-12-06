@@ -5,7 +5,7 @@ import { YouTubeEmbed } from '@next/third-parties/google'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { ThumbsUp, ThumbsDown, PlayIcon, SkipForwardIcon } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, PlayIcon, SkipForwardIcon, Share2Icon, XIcon } from 'lucide-react'
 import Image from 'next/image'
 
 interface Video {
@@ -15,10 +15,32 @@ interface Video {
   thumbnail: string
 }
 
+interface Toast {
+  id: number
+  message: string
+  type: 'success' | 'error'
+}
+
+const  REFRESH_INTERVAL_MS=10*1000;
 export default function SongVotingQueue() {
   const [currentVideo, setCurrentVideo] = useState<string | null>(null)
   const [inputLink, setInputLink] = useState('')
   const [queue, setQueue] = useState<Video[]>([])
+  const [toasts, setToasts] = useState<Toast[]>([])
+
+ async  function refreshStreams(){
+        const res=await fetch('/api/streams/my',{
+          credentials:'include'
+        })
+        console.log(res);
+  }
+
+  useEffect(()=>{
+    refreshStreams();
+    const interval = setInterval(()=>{
+
+    },REFRESH_INTERVAL_MS)
+  },[])
 
   useEffect(() => {
     const initializeQueue = async () => {
@@ -41,9 +63,13 @@ export default function SongVotingQueue() {
     initializeQueue()
   }, [])
 
-  useEffect(() => {
-    console.log('Current queue:', queue)
-  }, [queue])
+  const showToast = (message: string, type: 'success' | 'error') => {
+    const id = Date.now()
+    setToasts(prevToasts => [...prevToasts, { id, message, type }])
+    setTimeout(() => {
+      setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id))
+    }, 3000)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,6 +78,9 @@ export default function SongVotingQueue() {
       const details = await fetchVideoDetails(videoId)
       setQueue([...queue, { id: videoId, votes: 0, ...details }])
       setInputLink('')
+      showToast('Video added to queue', 'success')
+    } else {
+      showToast('Invalid YouTube link', 'error')
     }
   }
 
@@ -74,7 +103,6 @@ export default function SongVotingQueue() {
       const data = await response.json()
       
       if (data.items && data.items.length > 0) {
-        console.log('Fetched video details:', data.items[0].snippet)
         return {
           title: data.items[0].snippet.title,
           thumbnail: data.items[0].snippet.thumbnails.default.url
@@ -93,13 +121,46 @@ export default function SongVotingQueue() {
     if (queue.length > 0) {
       setCurrentVideo(queue[0].id)
       setQueue(queue.slice(1))
+      showToast('Playing next video', 'success')
+    } else {
+      showToast('No more videos in the queue', 'error')
+    }
+  }
+
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Join my Song Voting Queue!',
+      text: 'Help me choose the next song to play in my stream!',
+      url: window.location.href
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData)
+        showToast('Shared successfully!', 'success')
+      } else {
+        await navigator.clipboard.writeText(window.location.href)
+        showToast('Link copied to clipboard!', 'success')
+      }
+    } catch (error) {
+      console.error('Error sharing:', error)
+      showToast('Sharing failed', 'error')
     }
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
-      <div className="container mx-auto p-4 space-y-6">
-        <h1 className="text-4xl font-bold mb-6 text-center">Song Voting Queue</h1>
+      <div className="container mx-auto p-4 space-y-6 max-w-6xl">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-4xl font-bold">Song Voting Queue</h1>
+          <Button 
+            onClick={handleShare}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full flex items-center"
+          >
+            <Share2Icon className="h-5 w-5 mr-2" />
+            Share
+          </Button>
+        </div>
         
         {/* Current Video Player */}
         <div className="aspect-video rounded-lg overflow-hidden">
@@ -203,6 +264,26 @@ export default function SongVotingQueue() {
                 </Button>
               </CardContent>
             </Card>
+          ))}
+        </div>
+
+        {/* Toast Notifications */}
+        <div className="fixed bottom-4 right-4 space-y-2">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className={`p-4 rounded-md flex items-center justify-between ${
+                toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+              }`}
+            >
+              <span>{toast.message}</span>
+              <button
+                onClick={() => setToasts(toasts.filter(t => t.id !== toast.id))}
+                className="ml-4 text-white hover:text-gray-200"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
           ))}
         </div>
       </div>
