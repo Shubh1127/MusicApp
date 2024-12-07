@@ -12,7 +12,7 @@ export async function  GET(req:NextResponse){
     })
     if(!user){
         return NextResponse.json({
-            message:"unauthenticated"
+            message:"Unauthenticated"
         },{
             status:403
         })
