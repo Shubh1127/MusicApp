@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {z} from 'zod';
 //@ts-ignore
 import youtubesearchapi  from "youtube-search-api";
+import { getServerSession } from "next-auth";
 const urlRegex = /^(?:(?:https?:)?\/\/)?(?:www\.)?(?:m\.)?(?:youtu(?:be)?\.com\/(?:v\/|embed\/|watch(?:\/|\?v=))|youtu\.be\/)((?:\w|-){11})(?:\S+)?$/;
 
 const createStreamSchema=z.object({
@@ -10,6 +11,19 @@ const createStreamSchema=z.object({
         url:z.string(),
 })
 export async function POST(req:NextResponse){
+    const session=await getServerSession();
+    // console.log(session);
+    const user=await prismaClient.user.findFirst({
+        where:{
+            email:session?.user?.email ?? ""
+        }
+    })
+    if(!user){
+        return NextResponse.json({
+            message:'Unauthenticated',
+            status:403
+        })
+    }
     try{
         const data =createStreamSchema.parse(await req.json());
         const isYt=data.url.match(urlRegex);
@@ -22,11 +36,22 @@ export async function POST(req:NextResponse){
             })
         }
         const extractedId=data.url.split("?v=")[1];
+        const check=await prismaClient.stream.findFirst({
+            where:{
+                extractedId:extractedId ?? ""
+            }
+        })
+        if(check){
+            return NextResponse.json({
+                message:"Stream already exists"
+            })
+        }
+
         const res=await youtubesearchapi.GetVideoDetails(extractedId);
-    
+        console.log(res);
         const thumbnails=res.thumbnail.thumbnails;
         thumbnails.sort((a:{width:number},b:{width:number})=>a.width < b.width ? -1:1)
-       const stream=await  prismaClient.stream.create({
+         const stream=await  prismaClient.stream.create({
             data:{
                 userId:data.creatorId,
                 url:data.url,
