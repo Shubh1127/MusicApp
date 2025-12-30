@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const UpvoteSchema=z.object({
-    stramId:z.string(),
+    streamId:z.string(),
 })
 
 export async function POST(req:NextResponse){
@@ -24,15 +24,20 @@ export async function POST(req:NextResponse){
     }
     try{
         const data=UpvoteSchema.parse(await req.json())
-        await prismaClient.upvote.delete({
-            where:{
-                userId_streamId:{
+        const res=await prismaClient.upvote.create({
+            data:{
                     userId:user.id,
-                    streamId:data.stramId 
-                }
+                    streamId:data.streamId
+                
             }
         })
+        if(res){
+            return NextResponse.json({
+                message:'Upvoted successfully'
+            })
+        }
     }catch(e){
+        // console.log(e);
         return NextResponse.json({
             message:"Error while upvoting "
         },{

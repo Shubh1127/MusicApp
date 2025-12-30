@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const UpvoteSchema=z.object({
-    stramId:z.string(),
+    streamId:z.string(),
 })
 
 export async function POST(req:NextResponse){
@@ -28,7 +28,7 @@ export async function POST(req:NextResponse){
             where:{
                 userId_streamId:{
                     userId:user.id,
-                    streamId:data.stramId 
+                    streamId:data.streamId 
                 }
             }
         }) 
