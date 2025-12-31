@@ -81,6 +81,7 @@ export async function GET(req:NextResponse){
                 userId:creatorId ?? ""
         }
     })
+    console.log(streams);
     return NextResponse.json({
         streams
     })
