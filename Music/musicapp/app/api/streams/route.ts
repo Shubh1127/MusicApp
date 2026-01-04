@@ -12,7 +12,6 @@ const createStreamSchema=z.object({
 })
 export async function POST(req:NextResponse){
     const session=await getServerSession();
-    // console.log(session);
     const user=await prismaClient.user.findFirst({
         where:{
             email:session?.user?.email ?? ""
@@ -62,6 +61,7 @@ export async function POST(req:NextResponse){
                 bigImg:thumbnails[thumbnails.length-1].url ?? "https://img.freepik.com/free-vector/oops-404-error-with-broken-robot-concept-illustration_114360-5529.jpg"
             }
         });
+        
         return NextResponse.json({
             message:"stream added",
             id:stream.id 
