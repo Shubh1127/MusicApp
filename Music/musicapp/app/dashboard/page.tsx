@@ -48,6 +48,8 @@ export default function SongVotingQueue() {
         { id: 'dQw4w9WgXcQ', title: '', votes: 5, thumbnail: '' },
         { id: 'L_jWHffIx5E', title: '', votes: 3, thumbnail: '' },
         { id: 'fJ9rUzIMcZQ', title: '', votes: 4, thumbnail: '' },
+        { id: '3JZ_D3ELwOQ', title: '', votes: 2, thumbnail: '' },
+        { id: 'eY52Zsg-KVI', title: "", votes: 1, thumbnail: ''}
       ]
 
       const updatedVideos = await Promise.all(
